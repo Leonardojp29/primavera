@@ -12,13 +12,14 @@ uniform float uPixelRatio;
 uniform vec3 uHead;
 uniform float uHeadRadius;
 uniform float uNudge;
+uniform float uSpeedScale;
 
 varying float vAlpha;
 varying float vType;
 
 void main() {
   vec3 p = position;
-  float t = uTime * aSpeed;
+  float t = uTime * aSpeed * uSpeedScale;
   float alpha;
   if (aType < 0.5) {
     float h = mod(p.y + t * 0.09 + aPhase * 4.0, 4.4) - 0.3;

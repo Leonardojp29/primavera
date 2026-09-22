@@ -36,6 +36,26 @@ export const anim = {
   pulse: 1,
   /** Extra pulse when the user taps outside the flower. */
   nudge: 0,
+
+  /* ---- epilogue: the letter ---- */
+  /** Scene dims and loses protagonism 0..1. */
+  dim: 0,
+  /** Depth of field strength 0..1.4. */
+  dof: 0,
+  /** Envelope presence (fade in, later fade out) 0..1. */
+  envelope: 0,
+  /** Pollen gathers toward the envelope 0..1. */
+  gather: 0,
+  /** Envelope flap opening 0..1. */
+  flap: 0,
+  /** Sheet sliding out of the envelope 0..1. */
+  sheet: 0,
+  /** Particle motion slows down while reading 0..1. */
+  slow: 0,
+  /** Tiny warm lift when the reader reaches the signature. */
+  glow: 0,
+  /** Camera dolly toward the letter 0..1. */
+  dolly: 0,
 }
 
 export type AnimValues = typeof anim

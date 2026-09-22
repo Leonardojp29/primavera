@@ -103,7 +103,74 @@ function runFinal() {
   )
   tl.call(clearCaption, [], 7.4)
   tl.call(() => caption(['Te amo, Brissa. ❤️'], 'bold', 'final'), [], 8.4)
-  tl.to({}, { duration: 0.1 }, 8.5)
+  // let the moment breathe, then the story quietly continues on its own
+  tl.call(runEpilogue, [], 14.5)
+  tl.to({}, { duration: 0.1 }, 14.6)
+}
+
+/* ------------------------------------------------------------------ */
+/* Epilogue: the letter                                                */
+/* ------------------------------------------------------------------ */
+
+function runEpilogue() {
+  const tl = begin('epilogue')
+  tl.call(clearCaption, [], 0)
+  // the camera drifts back and the light settles
+  tl.to(anim, { dim: 0.55, duration: 7, ease: 'sine.inOut' }, 0.4)
+  tl.to(anim, { dof: 1, duration: 7, ease: 'sine.inOut' }, 1.0)
+  tl.to(anim, { hover: 0, dust: 0.38, drift: 0.5, bloomFx: 0.45, duration: 6, ease: 'sine.inOut' }, 0.4)
+  tl.call(() => caption(['Una última cosa...']), [], 3.4)
+  tl.call(clearCaption, [], 7.6)
+  // golden pollen gathers where the envelope will be, and it materialises
+  tl.to(anim, { gather: 1, pollen: 1, duration: 3.2, ease: 'sine.inOut' }, 7.2)
+  tl.to(anim, { envelope: 1, duration: 3.6, ease: 'power2.out' }, 8.4)
+  tl.to(anim, { pollen: 0.25, duration: 3.0, ease: 'sine.inOut' }, 10.6)
+  tl.call(
+    () => {
+      store.getState().setBusy(false)
+    },
+    [],
+    10.2,
+  )
+  tl.call(() => store.getState().setHint('Ábrelo.'), [], 17.5)
+  tl.to({}, { duration: 0.1 }, 17.6)
+}
+
+function runLetterOpen() {
+  const tl = begin('letter')
+  tl.to(anim, { flap: 1, duration: 1.6, ease: 'power2.inOut' }, 0.1)
+  tl.to(anim, { sheet: 1, duration: 2.2, ease: 'power2.inOut' }, 1.0)
+  tl.to(anim, { dolly: 1, duration: 3.6, ease: 'sine.inOut' }, 0.6)
+  tl.to(anim, { dof: 1.4, dim: 0.72, duration: 3.5, ease: 'sine.inOut' }, 0.8)
+  tl.to(anim, { slow: 1, dust: 0.22, pollen: 0.12, drift: 0.25, duration: 3.5, ease: 'sine.inOut' }, 0.8)
+  // hand over from the 3D sheet to the readable letter
+  tl.call(() => store.getState().setLetterOpen(true), [], 2.6)
+  tl.to(anim, { envelope: 0, duration: 1.8, ease: 'sine.inOut' }, 3.2)
+  tl.call(
+    () => {
+      store.getState().setBusy(false)
+    },
+    [],
+    4.2,
+  )
+  tl.to({}, { duration: 0.1 }, 5.0)
+}
+
+/** The reader reached the signature: one quiet exhale, nothing more. */
+export function letterEnd() {
+  const s = store.getState()
+  if (s.letterEnded) return
+  s.setLetterEnded(true)
+  gsap.to(anim, { glow: 1, duration: 3.5, ease: 'sine.inOut' })
+  gsap.to(anim, { drift: 0.9, duration: 4, ease: 'sine.inOut' })
+  gsap.to(anim, { drift: 0.3, duration: 6, ease: 'sine.inOut', delay: 8 })
+}
+
+/** Tap on the envelope. */
+export function openLetter() {
+  const { stage, busy } = store.getState()
+  if (busy || stage !== 'epilogue') return
+  runLetterOpen()
 }
 
 /* ------------------------------------------------------------------ */
@@ -138,7 +205,7 @@ export function advance() {
 /** Soft feedback when the user taps somewhere that is not the flower. */
 export function nudge() {
   const { busy, stage } = store.getState()
-  if (busy || stage === 'final' || stage === 'intro') return
+  if (busy || stage === 'final' || stage === 'intro' || stage === 'epilogue' || stage === 'letter') return
   gsap.killTweensOf(anim, 'nudge')
   gsap.fromTo(anim, { nudge: 1 }, { nudge: 0, duration: 1.6, ease: 'power2.out' })
 }

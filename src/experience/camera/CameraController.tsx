@@ -23,6 +23,8 @@ export function CameraController() {
   const stage = useExperience((s) => s.stage)
   const stageRef = useRef<Stage>(stage)
   stageRef.current = stage
+  const sizeRef = useRef(size)
+  sizeRef.current = size
 
   const state = useMemo(
     () => ({
@@ -112,6 +114,19 @@ export function CameraController() {
         pose.target.y -= lerp(0.05, 0.02, c)
         break
       }
+      case 'epilogue':
+      case 'letter': {
+        // drift back so the flower rests in the upper part of the frame and
+        // leaves room for the envelope below; a little closer once it opens
+        const portrait = sizeRef.current.width < sizeRef.current.height
+        const dir = state.tmp2.copy(headNormal).multiplyScalar(0.8).add(new THREE.Vector3(0, 0.02, 0.7)).normalize()
+        const dist = (portrait ? 3.1 : 4.2) - anim.dolly * 0.25
+        pose.position.copy(headPosition).addScaledVector(dir, dist)
+        pose.position.y -= 0.1
+        pose.target.copy(headPosition)
+        pose.target.y -= portrait ? 0.45 : 0.35
+        break
+      }
     }
   }
 
@@ -128,7 +143,7 @@ export function CameraController() {
     }
 
     // slow, cinematic follow
-    const lambda = s === 'final' ? 1.1 : 1.35
+    const lambda = s === 'final' ? 1.1 : s === 'epilogue' || s === 'letter' ? 0.55 : 1.35
     state.pos.x = damp(state.pos.x, state.desired.position.x, lambda, delta)
     state.pos.y = damp(state.pos.y, state.desired.position.y, lambda, delta)
     state.pos.z = damp(state.pos.z, state.desired.position.z, lambda, delta)
@@ -140,12 +155,14 @@ export function CameraController() {
     const inputX = pointer.hasMouse ? pointer.x : pointer.dragX
     const inputY = pointer.hasMouse ? pointer.y : pointer.dragY
     const final = s === 'final' || s === 'bloomed'
+    const reading = s === 'letter'
+    const parallaxScale = reading ? 0 : s === 'epilogue' ? 0.5 : 1
     const yawTarget = final ? clamp(pointer.dragX, -1, 1) * 0.42 + (pointer.hasMouse ? pointer.x * 0.08 : 0) : 0
     const pitchTarget = final ? clamp(pointer.dragY, -1, 1) * 0.16 + (pointer.hasMouse ? pointer.y * 0.04 : 0) : 0
     state.yaw = damp(state.yaw, yawTarget, 2.2, delta)
     state.pitch = damp(state.pitch, pitchTarget, 2.2, delta)
-    state.parallaxX = damp(state.parallaxX, final ? 0 : inputX * 0.16, 2, delta)
-    state.parallaxY = damp(state.parallaxY, final ? 0 : inputY * 0.08, 2, delta)
+    state.parallaxX = damp(state.parallaxX, final ? 0 : inputX * 0.16 * parallaxScale, 2, delta)
+    state.parallaxY = damp(state.parallaxY, final ? 0 : inputY * 0.08 * parallaxScale, 2, delta)
 
     // drag slowly relaxes back so the composition is never lost
     if (!pointer.down) {

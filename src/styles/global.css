@@ -267,7 +267,7 @@ body,
   pointer-events: auto;
   opacity: 0;
   transition: opacity 1.6s ease, color 0.4s ease;
-  z-index: 5;
+  z-index: 8;
 }
 
 .audio-toggle.is-visible {
@@ -373,5 +373,212 @@ body,
   .intro__spark,
   .fallback__glow {
     animation-duration: 0.01s;
+  }
+}
+
+/* ---------- The letter ---------- */
+
+.letter {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--safe-top) + 4vh) calc(var(--safe-right) + 16px) calc(var(--safe-bottom) + 4vh)
+    calc(var(--safe-left) + 16px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.8s ease;
+}
+
+.letter.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.letter__backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 58%, rgba(10, 7, 3, 0.18) 0%, rgba(6, 4, 2, 0.5) 80%);
+  pointer-events: none;
+}
+
+.letter__enter {
+  position: relative;
+  width: min(91vw, 560px);
+  max-height: 100%;
+  transform: translateY(28px) scale(0.985);
+  transition: transform 2.2s cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+
+.letter.is-visible .letter__enter {
+  transform: none;
+}
+
+.letter__tilt {
+  will-change: transform;
+  transform-style: preserve-3d;
+}
+
+.letter__paper {
+  position: relative;
+  max-height: min(82dvh, calc(100dvh - var(--safe-top) - var(--safe-bottom) - 8vh));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  scrollbar-width: none;
+  padding: clamp(30px, 8vw, 54px) clamp(24px, 6.5vw, 50px) clamp(34px, 9vw, 60px);
+  border-radius: 5px;
+  color: #3a3027;
+  user-select: text;
+  -webkit-user-select: text;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.36 0 0 0 0 0.28 0 0 0 0 0.18 0.09 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    linear-gradient(168deg, #f8f2e6 0%, #f3eadb 55%, #eee4d1 100%);
+  background-attachment: local, local;
+  box-shadow:
+    0 40px 90px rgba(0, 0, 0, 0.6),
+    0 12px 30px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -1px 0 rgba(120, 90, 50, 0.16);
+}
+
+.letter__paper::-webkit-scrollbar {
+  display: none;
+}
+
+.letter__title {
+  font-style: normal;
+  font-weight: 600;
+  font-size: clamp(26px, 6.4vw, 32px);
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.letter__rule {
+  width: 38px;
+  height: 1px;
+  margin: 14px 0 24px;
+  background: linear-gradient(90deg, rgba(211, 163, 55, 0), #d3a337 35%, #d3a337 65%, rgba(211, 163, 55, 0));
+}
+
+.letter__paper p {
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(17.5px, 4.6vw, 20px);
+  line-height: 1.62;
+  margin: 0 0 1.05em;
+  text-wrap: pretty;
+}
+
+.letter__paper strong {
+  font-weight: 600;
+  color: #302620;
+}
+
+.letter__sign-wrap {
+  position: relative;
+  margin-top: 1.4em;
+  padding-bottom: 6px;
+}
+
+.letter__sign {
+  margin-bottom: 0.4em !important;
+}
+
+.letter__spark {
+  position: absolute;
+  top: 0.75em;
+  left: -10px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #f2c443;
+  box-shadow: 0 0 8px 3px rgba(242, 196, 67, 0.55);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.letter__sign-wrap.is-ended .letter__spark {
+  animation: spark-cross 2.8s cubic-bezier(0.35, 0, 0.2, 1) 0.3s 1 both;
+}
+
+@keyframes spark-cross {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  18% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(104px);
+  }
+}
+
+.letter__heart {
+  font-size: 17px;
+  line-height: 1;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 2.2s ease 1.6s, transform 2.2s ease 1.6s;
+}
+
+.letter__heart.is-visible {
+  opacity: 0.85;
+  transform: scale(1);
+  animation: heart-once 2s ease-in-out 3.6s 1;
+}
+
+@keyframes heart-once {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.16);
+  }
+}
+
+.reveal {
+  opacity: 0;
+}
+
+.letter.is-visible .reveal {
+  animation: letter-rise 1.5s cubic-bezier(0.2, 0.6, 0.2, 1) both;
+}
+
+@keyframes letter-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (min-width: 900px) {
+  .letter__paper {
+    max-height: min(80dvh, 760px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letter.is-visible .reveal {
+    animation-duration: 0.01s;
+    animation-delay: 0s !important;
+  }
+  .letter__sign-wrap.is-ended .letter__spark,
+  .letter__heart.is-visible {
+    animation: none;
   }
 }

@@ -63,6 +63,8 @@ export function InteractionTarget() {
     document.body.style.cursor = 'default'
   }
 
+  if (stage === 'epilogue' || stage === 'letter') return null
+
   return (
     <mesh ref={ref} material={material} onClick={onClick} onPointerOver={onOver} onPointerOut={onOut}>
       <sphereGeometry args={[1, 12, 8]} />

@@ -13,6 +13,8 @@ export class AmbientAudio {
   private master: GainNode | null = null
   private tone: BiquadFilterNode | null = null
   private running = false
+  private ducking = 1
+  private static readonly VOLUME = 0.55
 
   get isRunning() {
     return this.running
@@ -28,17 +30,20 @@ export class AmbientAudio {
       this.ctx = new Ctx()
       this.build(this.ctx)
     }
-    if (this.ctx.state === 'suspended') await this.ctx.resume()
+    // play() must be called synchronously inside the user gesture (iOS);
+    // resuming the context can happen alongside it.
+    const playing = this.element!.play()
+    if (this.ctx.state === 'suspended') void this.ctx.resume()
     try {
-      await this.element!.play()
+      await playing
     } catch {
-      // Autoplay was blocked; the visitor will need to tap the toggle again.
+      // No user gesture yet: the hook retries on the first tap.
       return
     }
     const now = this.ctx.currentTime
     this.master!.gain.cancelScheduledValues(now)
     this.master!.gain.setValueAtTime(this.master!.gain.value, now)
-    this.master!.gain.linearRampToValueAtTime(0.55, now + 3.5)
+    this.master!.gain.linearRampToValueAtTime(AmbientAudio.VOLUME * this.ducking, now + 3.5)
     this.running = true
   }
 
@@ -52,6 +57,16 @@ export class AmbientAudio {
     window.setTimeout(() => {
       if (!this.running) this.element?.pause()
     }, 2000)
+  }
+
+  /** 1 = full volume, lower while reading the letter. Eases over a few seconds. */
+  setDucking(level: number) {
+    this.ducking = level
+    if (!this.ctx || !this.master || !this.running) return
+    const now = this.ctx.currentTime
+    this.master.gain.cancelScheduledValues(now)
+    this.master.gain.setValueAtTime(this.master.gain.value, now)
+    this.master.gain.linearRampToValueAtTime(AmbientAudio.VOLUME * level, now + 4)
   }
 
   /** 0 = dark start, 1 = golden bloom. Gently opens the tone as the flower blooms. */

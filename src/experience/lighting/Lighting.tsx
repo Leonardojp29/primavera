@@ -25,6 +25,8 @@ export function Lighting() {
     const t = clock.elapsedTime
     const warmth = anim.warmth
     const light = anim.light
+    // the epilogue lets everything settle; the signature lifts it a touch
+    const dimK = 1 - anim.dim * 0.4 + anim.glow * 0.08
     sceneUniforms.uTime.value = t
     sceneUniforms.uWarmth.value = warmth
     sceneUniforms.uHeadPos.value.copy(flowerWorld.head)
@@ -34,14 +36,14 @@ export function Lighting() {
       .set(0.45 + Math.sin(t * 0.07) * 0.08, 0.78, 0.5 + Math.cos(t * 0.05) * 0.08)
       .normalize()
     sceneUniforms.uKeyColor.value.copy(palette.keyCool).lerp(palette.keyWarm, warmth)
-    sceneUniforms.uKeyIntensity.value = 0.55 + light * 0.45 + warmth * 0.45
+    sceneUniforms.uKeyIntensity.value = (0.55 + light * 0.45 + warmth * 0.45) * dimK
     sceneUniforms.uFillColor.value.copy(palette.fillCool).lerp(palette.fillWarm, warmth)
     sceneUniforms.uAmbient.value
       .copy(palette.ambientCool)
       .lerp(palette.ambientWarm, warmth)
-      .multiplyScalar(0.7 + 0.4 * light)
+      .multiplyScalar((0.7 + 0.4 * light) * (1 - anim.dim * 0.3))
 
-    tmpColor.copy(palette.bgDark).lerp(palette.bgWarm, warmth * 0.92)
+    tmpColor.copy(palette.bgDark).lerp(palette.bgWarm, warmth * 0.92).multiplyScalar(1 - anim.dim * 0.35)
     background.copy(tmpColor)
     // kept for the renderer clear colour; the visible sky is the Sky dome
     sceneUniforms.uFogColor.value.copy(tmpColor)
@@ -58,7 +60,7 @@ export function Lighting() {
     if (fill) {
       fill.color.copy(sceneUniforms.uAmbient.value).multiplyScalar(2.2)
       fill.groundColor.copy(sceneUniforms.uFillColor.value)
-      fill.intensity = 0.8 + warmth * 0.6
+      fill.intensity = (0.8 + warmth * 0.6) * (1 - anim.dim * 0.3)
     }
   })
 

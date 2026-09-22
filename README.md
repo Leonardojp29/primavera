@@ -32,10 +32,12 @@ Todo es procedural: no se descargan modelos ni texturas.
 - `src/experience/lighting/` — uniforms compartidos que llevan la escena de azul tenue a dorado, cielo y suelo con el mismo color de niebla.
 - `src/experience/particles/` — polvo dorado y polen en `Points` con shader; pétalos sueltos instanciados.
 - `src/experience/postfx/` — bloom sutil, viñeta y tone mapping neutro.
-- `src/audio/` — reproduce `public/audio/ambient.mp3` en loop a través de Web Audio (fade in/out, filtro que se abre con el florecimiento). Solo se inicia con el botón.
+- `src/experience/letter/` — el epílogo: un sobre de papel 3D colocado relativo a la cámara (texturas de papel generadas en canvas, solapa con bisagra, sello dorado). Al tocarlo hace el relevo a la carta HTML.
+- `src/ui/Letter.tsx` — la carta: papel cálido con grano sutil, párrafos que entran en cascada, scroll interno en móvil, parallax leve en desktop y un detalle discreto al llegar a la firma.
+- `src/audio/` — reproduce `public/audio/ambient.mp3` en loop a través de Web Audio (fade in/out, filtro que se abre con el florecimiento, volumen más bajo mientras se lee la carta). La música está activa por defecto, pero el navegador solo permite sonar tras el primer toque, así que arranca con la primera interacción.
 - `src/utils/quality.ts` — tiers de calidad por dispositivo (partículas, segmentos, MSAA, DPR máximo). El DPR además baja solo si caen los FPS.
 
 ## Personalizar
 
-Los textos viven en `src/experience/state/director.ts` y `src/ui/Title.tsx`.
+Los textos viven en `src/experience/state/director.ts`, `src/ui/Title.tsx` y la carta en `src/ui/Letter.tsx`.
 Los tiempos de cada etapa están en las timelines del mismo `director.ts`.

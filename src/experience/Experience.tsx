@@ -6,6 +6,7 @@ import { quality } from '../utils/quality'
 import { usePointerListeners } from './camera/usePointer'
 import { Scene } from './Scene'
 import { nudge, start } from './state/director'
+import { useExperience } from './state/store'
 
 /** Reveals the experience once the renderer has produced a couple of frames. */
 function Ready() {
@@ -21,10 +22,13 @@ function Ready() {
 export default function Experience() {
   usePointerListeners()
   const [dpr, setDpr] = useState(() => Math.min(quality.maxDpr, window.devicePixelRatio || 1))
+  const stage = useExperience((s) => s.stage)
+  // while the letter is open the scene is blurred and dim: render it cheaper
+  const effectiveDpr = stage === 'letter' ? Math.min(dpr, 1) : dpr
 
   return (
     <Canvas
-      dpr={dpr}
+      dpr={effectiveDpr}
       frameloop="always"
       camera={{ fov: 45, near: 0.05, far: 40, position: [0, 0.95, 5.6] }}
       gl={{
@@ -59,6 +63,7 @@ if (import.meta.env.DEV) {
       import('./state/store').then((s) => {
         ;(window as unknown as { __brissa: unknown }).__brissa = {
           advance: d.advance,
+          openLetter: d.openLetter,
           anim: a.anim,
           store: s.useExperience,
         }

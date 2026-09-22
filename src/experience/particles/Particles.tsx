@@ -1,9 +1,10 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useMemo } from 'react'
 import * as THREE from 'three'
-import { hash } from '../../utils/math'
+import { hash, lerp } from '../../utils/math'
 import { quality } from '../../utils/quality'
 import { flowerWorld } from '../flower/Flower'
+import { letterWorld } from '../letter/letterWorld'
 import { head } from '../flower/flowerRig'
 import { anim } from '../state/anim'
 import { dustFragment, dustVertex } from './particles.glsl'
@@ -66,6 +67,7 @@ export function Particles() {
           uHead: { value: new THREE.Vector3() },
           uHeadRadius: { value: head.openRadius },
           uNudge: { value: 0 },
+          uSpeedScale: { value: 1 },
           uColor: { value: new THREE.Color('#ffd27a') },
           uColorPollen: { value: new THREE.Color('#ffe9a8') },
         },
@@ -80,8 +82,11 @@ export function Particles() {
     u.uPollen.value = anim.pollen
     u.uNudge.value = anim.nudge
     u.uPixelRatio.value = gl.getPixelRatio()
-    u.uHead.value.copy(flowerWorld.head)
-    u.uHeadRadius.value = head.openRadius * Math.max(flowerWorld.headScale, 0.2)
+    // pollen orbits the flower; at the epilogue it gathers where the envelope forms
+    const gather = anim.gather
+    u.uHead.value.copy(flowerWorld.head).lerp(letterWorld.focus, gather)
+    u.uHeadRadius.value = lerp(head.openRadius * Math.max(flowerWorld.headScale, 0.2), letterWorld.radius, gather)
+    u.uSpeedScale.value = 1 - anim.slow * 0.65
   })
 
   return <points geometry={geometry} material={material} frustumCulled={false} />

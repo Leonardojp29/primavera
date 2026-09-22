@@ -1,6 +1,18 @@
 import { create } from 'zustand'
 
-export type Stage = 'intro' | 'seed' | 'grow1' | 'grow2' | 'bud' | 'bloom' | 'bloomed' | 'final'
+export type Stage =
+  | 'intro'
+  | 'seed'
+  | 'grow1'
+  | 'grow2'
+  | 'bud'
+  | 'bloom'
+  | 'bloomed'
+  | 'final'
+  /** The flower recedes and the envelope appears. */
+  | 'epilogue'
+  /** The letter is open; the experience rests here. */
+  | 'letter'
 
 export type CaptionVariant = 'story' | 'final'
 
@@ -22,12 +34,18 @@ interface ExperienceStore {
   caption: Caption | null
   hint: string | null
   audioOn: boolean
+  /** The HTML letter is visible (3D sheet has handed over). */
+  letterOpen: boolean
+  /** The reader reached the signature. */
+  letterEnded: boolean
   setStage: (stage: Stage) => void
   setBusy: (busy: boolean) => void
   setReady: (ready: boolean) => void
   setCaption: (caption: Caption | null) => void
   setHint: (hint: string | null) => void
   setAudioOn: (on: boolean) => void
+  setLetterOpen: (open: boolean) => void
+  setLetterEnded: (ended: boolean) => void
 }
 
 export const useExperience = create<ExperienceStore>((set) => ({
@@ -36,11 +54,15 @@ export const useExperience = create<ExperienceStore>((set) => ({
   ready: false,
   caption: null,
   hint: null,
-  audioOn: false,
+  audioOn: true,
+  letterOpen: false,
+  letterEnded: false,
   setStage: (stage) => set({ stage }),
   setBusy: (busy) => set({ busy }),
   setReady: (ready) => set({ ready }),
   setCaption: (caption) => set({ caption }),
   setHint: (hint) => set({ hint }),
   setAudioOn: (audioOn) => set({ audioOn }),
+  setLetterOpen: (letterOpen) => set({ letterOpen }),
+  setLetterEnded: (letterEnded) => set({ letterEnded }),
 }))

@@ -5,6 +5,7 @@ import { Captions } from './ui/Captions'
 import { Fallback } from './ui/Fallback'
 import { Hint } from './ui/Hint'
 import { Intro } from './ui/Intro'
+import { Letter } from './ui/Letter'
 import { Title } from './ui/Title'
 import { useExperience } from './experience/state/store'
 import { isWebGLAvailable } from './utils/webgl'
@@ -28,6 +29,7 @@ export default function App() {
         <Captions />
         <Hint />
       </div>
+      <Letter />
       <AudioToggle />
       <Intro />
     </div>
