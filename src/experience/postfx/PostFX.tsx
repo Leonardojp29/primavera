@@ -1,11 +1,29 @@
-import { Bloom, DepthOfField, EffectComposer, ToneMapping, Vignette } from '@react-three/postprocessing'
+import { Bloom, DepthOfField, EffectComposer, EffectComposerContext, ToneMapping, Vignette } from '@react-three/postprocessing'
 import { useFrame } from '@react-three/fiber'
 import { BlendFunction, ToneMappingMode, type BloomEffect, type DepthOfFieldEffect } from 'postprocessing'
-import { useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { quality } from '../../utils/quality'
 import { letterWorld } from '../letter/letterWorld'
 import { anim } from '../state/anim'
 import { useExperience } from '../state/store'
+
+/**
+ * When a depth-based effect is removed, postprocessing deletes its depth
+ * texture but leaves the (multisampled) buffers attached to it, which breaks
+ * the resolve blit and freezes the image. Rebuilding the buffers fixes it.
+ */
+function DepthBufferCleanup({ active }: { active: boolean }) {
+  const { composer } = useContext(EffectComposerContext)
+  const wasActive = useRef(active)
+  useEffect(() => {
+    if (wasActive.current && !active) {
+      composer.inputBuffer.dispose()
+      composer.outputBuffer.dispose()
+    }
+    wasActive.current = active
+  }, [active, composer])
+  return null
+}
 
 /**
  * Very restrained postprocessing: a bloom that only catches the brightest
@@ -62,6 +80,7 @@ export function PostFX() {
       />
       <Vignette eskil={false} offset={0.18} darkness={0.72} blendFunction={BlendFunction.NORMAL} />
       <ToneMapping mode={ToneMappingMode.NEUTRAL} />
+      <DepthBufferCleanup active={useDof} />
     </EffectComposer>
   )
 }
