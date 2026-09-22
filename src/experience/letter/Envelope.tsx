@@ -6,6 +6,7 @@ import { pointer } from '../camera/usePointer'
 import { anim } from '../state/anim'
 import { openLetter } from '../state/director'
 import { useExperience } from '../state/store'
+import { tapCue } from '../interaction/tapCue'
 import { letterWorld } from './letterWorld'
 import { makeEnvelopeFrontTexture, makeGrainTexture } from './paperTextures'
 
@@ -81,6 +82,7 @@ export function Envelope() {
       pos: new THREE.Vector3(),
       q: new THREE.Quaternion(),
       e: new THREE.Euler(),
+      projected: new THREE.Vector3(),
       tiltX: 0,
       tiltY: 0,
     }),
@@ -109,6 +111,17 @@ export function Envelope() {
     letterWorld.focus.copy(tmp.pos)
 
     g.visible = active && e > 0.002
+    if (active) {
+      const s = useExperience.getState()
+      const waiting = s.stage === 'epilogue' && !s.busy && e > 0.9
+      tapCue.visible = waiting
+      if (waiting) {
+        tmp.projected.copy(tmp.pos).project(camera)
+        tapCue.x = (tmp.projected.x * 0.5 + 0.5) * size.width
+        tapCue.y = (-tmp.projected.y * 0.5 + 0.5) * size.height
+        tapCue.scale = 1.15
+      }
+    }
     if (!g.visible) return
 
     // entrance rises into place; the exit sinks away

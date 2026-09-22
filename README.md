@@ -33,7 +33,8 @@ Todo es procedural: no se descargan modelos ni texturas.
 - `src/experience/particles/` — polvo dorado y polen en `Points` con shader; pétalos sueltos instanciados.
 - `src/experience/postfx/` — bloom sutil, viñeta y tone mapping neutro.
 - `src/experience/letter/` — el epílogo: un sobre de papel 3D colocado relativo a la cámara (texturas de papel generadas en canvas, solapa con bisagra, sello dorado). Al tocarlo hace el relevo a la carta HTML.
-- `src/ui/Letter.tsx` — la carta: papel cálido con grano sutil, párrafos que entran en cascada, scroll interno en móvil, parallax leve en desktop y un detalle discreto al llegar a la firma.
+- `src/ui/Letter.tsx` — la carta: papel cálido con grano sutil, párrafos que entran en cascada, scroll interno en móvil, parallax leve en desktop y un detalle discreto al llegar a la firma. Se puede cerrar (× o tocando fuera) para ver la flor y volver a abrir con "Volver a la carta".
+- `src/ui/TapCue.tsx` y `src/ui/useIdleHints.ts` — un anillo de luz proyectado desde el punto 3D a tocar y frases breves que aparecen solo cuando la historia espera un toque.
 - `src/audio/` — reproduce `public/audio/ambient.mp3` en loop a través de Web Audio (fade in/out, filtro que se abre con el florecimiento, volumen más bajo mientras se lee la carta). La música está activa por defecto, pero el navegador solo permite sonar tras el primer toque, así que arranca con la primera interacción.
 - `src/utils/quality.ts` — tiers de calidad por dispositivo (partículas, segmentos, MSAA, DPR máximo). El DPR además baja solo si caen los FPS.
 

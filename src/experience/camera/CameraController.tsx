@@ -114,6 +114,14 @@ export function CameraController() {
         pose.target.y -= lerp(0.05, 0.02, c)
         break
       }
+      case 'rest': {
+        // the letter is put away: come back to the flower, close and calm
+        const dir = state.tmp2.copy(headNormal).multiplyScalar(0.8).add(new THREE.Vector3(0, 0.02, 0.7)).normalize()
+        pose.position.copy(headPosition).addScaledVector(dir, 2.15)
+        pose.target.copy(headPosition)
+        pose.target.y -= 0.03
+        break
+      }
       case 'epilogue':
       case 'letter': {
         // drift back so the flower rests in the upper part of the frame and
@@ -143,7 +151,7 @@ export function CameraController() {
     }
 
     // slow, cinematic follow
-    const lambda = s === 'final' ? 1.1 : s === 'epilogue' || s === 'letter' ? 0.55 : 1.35
+    const lambda = s === 'final' ? 1.1 : s === 'epilogue' || s === 'letter' ? 0.55 : s === 'rest' ? 0.8 : 1.35
     state.pos.x = damp(state.pos.x, state.desired.position.x, lambda, delta)
     state.pos.y = damp(state.pos.y, state.desired.position.y, lambda, delta)
     state.pos.z = damp(state.pos.z, state.desired.position.z, lambda, delta)
@@ -154,7 +162,7 @@ export function CameraController() {
     // interaction: subtle parallax everywhere, a bounded orbit at the end
     const inputX = pointer.hasMouse ? pointer.x : pointer.dragX
     const inputY = pointer.hasMouse ? pointer.y : pointer.dragY
-    const final = s === 'final' || s === 'bloomed'
+    const final = s === 'final' || s === 'bloomed' || s === 'rest'
     const reading = s === 'letter'
     const parallaxScale = reading ? 0 : s === 'epilogue' ? 0.5 : 1
     const yawTarget = final ? clamp(pointer.dragX, -1, 1) * 0.42 + (pointer.hasMouse ? pointer.x * 0.08 : 0) : 0

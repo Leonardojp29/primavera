@@ -13,6 +13,8 @@ export type Stage =
   | 'epilogue'
   /** The letter is open; the experience rests here. */
   | 'letter'
+  /** The letter was closed to look at the flower; it can be reopened. */
+  | 'rest'
 
 export type CaptionVariant = 'story' | 'final'
 

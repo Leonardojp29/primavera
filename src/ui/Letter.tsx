@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { pointer } from '../experience/camera/usePointer'
-import { letterEnd } from '../experience/state/director'
+import { closeLetter, letterEnd } from '../experience/state/director'
 import { useExperience } from '../experience/state/store'
 
 /** Seconds before the title appears, then the stagger between paragraphs. */
@@ -24,7 +24,7 @@ const paragraphs: React.ReactNode[] = [
     Solo quería hacerte algo diferente para recordarte cuánto te amo... porque probablemente no te lo digo de esta
     manera todos los días, pero de verdad <strong>te amo muchísimo y eres demasiado importante para mí. ❤️</strong>
   </>,
-  'Y aunque a veces sea medio huevón para demostrar algunas cosas... espero que detalles como este puedan recordártelo aunque sea un poquito.',
+  'Y aunque a veces sea medio medio para demostrar algunas cosas... espero que detalles como este que sinceramente tampoco son la gran cosa, puedan recordártelo aunque sea un poquito.',
   <strong>Te amo, mi amor... muchísimo. ❤️</strong>,
 ]
 
@@ -40,15 +40,29 @@ export function Letter() {
   const ended = useExperience((s) => s.letterEnded)
   const [mounted, setMounted] = useState(false)
   const [visible, setVisible] = useState(false)
+  const [moreBelow, setMoreBelow] = useState(false)
+  /** After the first full reveal (or a close) the text simply is there. */
+  const [settled, setSettled] = useState(false)
   const paperRef = useRef<HTMLDivElement>(null)
   const tiltRef = useRef<HTMLDivElement>(null)
   const signRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!open) return
+    if (!open) {
+      if (mounted) {
+        setVisible(false)
+        setSettled(true)
+      }
+      return
+    }
     setMounted(true)
     const id = window.setTimeout(() => setVisible(true), 60)
-    return () => window.clearTimeout(id)
+    const settleId = window.setTimeout(() => setSettled(true), SIGNATURE_READY + 1500)
+    return () => {
+      window.clearTimeout(id)
+      window.clearTimeout(settleId)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   // Reaching the signature (once it has been revealed) closes the story softly.
@@ -80,6 +94,25 @@ export function Letter() {
     }
   }, [visible, ended])
 
+  // Invite to keep reading when the paper holds more than it shows.
+  useEffect(() => {
+    if (!visible) return
+    const paper = paperRef.current
+    if (!paper) return
+    const update = () => {
+      const overflow = paper.scrollHeight - paper.clientHeight
+      setMoreBelow(overflow > 24 && paper.scrollTop < 30)
+    }
+    const showId = window.setTimeout(update, (BODY_DELAY + STAGGER * 2) * 1000)
+    paper.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      window.clearTimeout(showId)
+      paper.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+    }
+  }, [visible])
+
   // Desktop only: the sheet leans a couple of degrees toward the cursor.
   useEffect(() => {
     if (!visible || !pointer.hasMouse) return
@@ -103,9 +136,14 @@ export function Letter() {
   const delay = (i: number) => ({ animationDelay: `${(BODY_DELAY + i * STAGGER).toFixed(2)}s` })
 
   return (
-    <div className={`letter${visible ? ' is-visible' : ''}`} aria-live="polite">
-      <div className="letter__backdrop" />
+    <div className={`letter${visible ? ' is-visible' : ''}${settled ? ' is-settled' : ''}`} aria-live="polite">
+      <div className="letter__backdrop" onClick={closeLetter} />
       <div className="letter__enter">
+        <button type="button" className="letter__close" onClick={closeLetter} aria-label="Guardar la carta y ver la flor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
         <div className="letter__tilt" ref={tiltRef}>
           <div className="letter__paper" ref={paperRef}>
             <h2 className="letter__title reveal" style={{ animationDelay: `${FIRST_DELAY}s` }}>
@@ -122,10 +160,13 @@ export function Letter() {
                 <strong>Leo ❤️</strong>
               </p>
               <span className="letter__spark" aria-hidden />
-              <div className={`letter__heart${ended ? ' is-visible' : ''}`} aria-hidden>
-                ❤️
-              </div>
             </div>
+          </div>
+          <div className={`letter__more${moreBelow ? ' is-visible' : ''}`} aria-hidden>
+            <span>sigue leyendo…</span>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
           </div>
         </div>
       </div>

@@ -8,6 +8,7 @@ import { advance } from '../state/director'
 import { anim } from '../state/anim'
 import { useExperience } from '../state/store'
 import { interaction } from './interactionState'
+import { tapCue } from './tapCue'
 
 /**
  * Invisible, generous hit volume that follows the living part of the plant:
@@ -21,6 +22,7 @@ export function InteractionTarget() {
     [],
   )
   const point = useMemo(() => new THREE.Vector3(), [])
+  const projected = useMemo(() => new THREE.Vector3(), [])
   const busy = useExperience((s) => s.busy)
   const stage = useExperience((s) => s.stage)
 
@@ -31,17 +33,32 @@ export function InteractionTarget() {
     }
   }, [busy, stage])
 
-  useFrame(() => {
+  useFrame(({ camera, size }) => {
     const m = ref.current
     if (!m) return
-    if (anim.bud > 0.3) {
+    const open = anim.bud > 0.3
+    if (open) {
       m.position.copy(flowerWorld.head)
       const r = (0.25 + head.openRadius * anim.open) * flowerWorld.headScale + 0.25
       m.scale.setScalar(r)
+      projected.copy(flowerWorld.head)
     } else {
       stemPoint(anim.stem, point)
       m.position.set(point.x, point.y + 0.1, point.z)
       m.scale.setScalar(anim.stem < 0.05 ? 0.55 : 0.6)
+      projected.set(point.x, point.y + 0.03, point.z)
+    }
+
+    // where to touch next, for the breathing ring in the UI
+    const s = useExperience.getState()
+    const waiting =
+      !s.busy && (s.stage === 'seed' || s.stage === 'grow1' || s.stage === 'grow2' || s.stage === 'bud' || s.stage === 'bloomed')
+    tapCue.visible = waiting
+    if (waiting) {
+      projected.project(camera)
+      tapCue.x = (projected.x * 0.5 + 0.5) * size.width
+      tapCue.y = (-projected.y * 0.5 + 0.5) * size.height
+      tapCue.scale = s.stage === 'bloomed' ? 1.9 : s.stage === 'seed' ? 0.85 : 1.05
     }
   })
 
@@ -63,7 +80,7 @@ export function InteractionTarget() {
     document.body.style.cursor = 'default'
   }
 
-  if (stage === 'epilogue' || stage === 'letter') return null
+  if (stage === 'epilogue' || stage === 'letter' || stage === 'rest') return null
 
   return (
     <mesh ref={ref} material={material} onClick={onClick} onPointerOver={onOver} onPointerOut={onOut}>

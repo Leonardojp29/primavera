@@ -87,8 +87,6 @@ function runBloom() {
     [],
     6.2,
   )
-  tl.call(() => store.getState().setHint('Acércate.'), [], 9.2)
-  // Keep the timeline alive so that `busy` stays consistent until the hint appears.
   tl.to({}, { duration: 0.1 }, 9.3)
 }
 
@@ -132,8 +130,7 @@ function runEpilogue() {
     [],
     10.2,
   )
-  tl.call(() => store.getState().setHint('Ábrelo.'), [], 17.5)
-  tl.to({}, { duration: 0.1 }, 17.6)
+  tl.to({}, { duration: 0.1 }, 12.2)
 }
 
 function runLetterOpen() {
@@ -154,6 +151,38 @@ function runLetterOpen() {
     4.2,
   )
   tl.to({}, { duration: 0.1 }, 5.0)
+}
+
+function runRest() {
+  const tl = begin('rest')
+  store.getState().setLetterOpen(false)
+  tl.to(anim, { dof: 0, dim: 0.12, dolly: 0, duration: 3.2, ease: 'sine.inOut' }, 0)
+  tl.to(anim, { slow: 0, dust: 0.5, pollen: 0.5, drift: 0.5, bloomFx: 0.6, hover: 0.3, duration: 3.2, ease: 'sine.inOut' }, 0)
+  tl.call(() => store.getState().setBusy(false), [], 1.6)
+  tl.to({}, { duration: 0.1 }, 3.3)
+}
+
+function runReopen() {
+  const tl = begin('letter')
+  tl.to(anim, { dof: 1.4, dim: 0.72, dolly: 1, duration: 2.6, ease: 'sine.inOut' }, 0)
+  tl.to(anim, { slow: 1, dust: 0.22, pollen: 0.12, drift: 0.25, hover: 0, duration: 2.6, ease: 'sine.inOut' }, 0)
+  tl.call(() => store.getState().setLetterOpen(true), [], 0.5)
+  tl.call(() => store.getState().setBusy(false), [], 1.4)
+  tl.to({}, { duration: 0.1 }, 2.7)
+}
+
+/** Put the letter away to look at the flower. */
+export function closeLetter() {
+  const { stage, busy } = store.getState()
+  if (busy || stage !== 'letter') return
+  runRest()
+}
+
+/** Pick the letter up again. */
+export function reopenLetter() {
+  const { stage, busy } = store.getState()
+  if (busy || stage !== 'rest') return
+  runReopen()
 }
 
 /** The reader reached the signature: one quiet exhale, nothing more. */
@@ -205,7 +234,7 @@ export function advance() {
 /** Soft feedback when the user taps somewhere that is not the flower. */
 export function nudge() {
   const { busy, stage } = store.getState()
-  if (busy || stage === 'final' || stage === 'intro' || stage === 'epilogue' || stage === 'letter') return
+  if (busy || stage === 'final' || stage === 'intro' || stage === 'epilogue' || stage === 'letter' || stage === 'rest') return
   gsap.killTweensOf(anim, 'nudge')
   gsap.fromTo(anim, { nudge: 1 }, { nudge: 0, duration: 1.6, ease: 'power2.out' })
 }

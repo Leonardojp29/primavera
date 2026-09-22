@@ -1,7 +1,7 @@
 import { Bloom, DepthOfField, EffectComposer, ToneMapping, Vignette } from '@react-three/postprocessing'
 import { useFrame } from '@react-three/fiber'
 import { BlendFunction, ToneMappingMode, type BloomEffect, type DepthOfFieldEffect } from 'postprocessing'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { quality } from '../../utils/quality'
 import { letterWorld } from '../letter/letterWorld'
 import { anim } from '../state/anim'
@@ -17,7 +17,10 @@ export function PostFX() {
   const bloomRef = useRef<BloomEffect>(null)
   const dofRef = useRef<DepthOfFieldEffect>(null)
   const stage = useExperience((s) => s.stage)
-  const useDof = quality.tier !== 'low' && (stage === 'epilogue' || stage === 'letter')
+  const [dofSettled, setDofSettled] = useState(false)
+  const settledRef = useRef(false)
+  const useDof =
+    quality.tier !== 'low' && (stage === 'epilogue' || stage === 'letter' || (stage === 'rest' && !dofSettled))
 
   useEffect(() => {
     const dof = dofRef.current
@@ -33,6 +36,12 @@ export function PostFX() {
     if (b) b.intensity = 0.12 + anim.bloomFx * 0.95 + anim.warmth * 0.15
     const d = dofRef.current
     if (d) d.bokehScale = anim.dof * 2.6
+    // once the blur has fully faded in the resting view, drop the effect
+    const settled = stage === 'rest' && anim.dof < 0.01
+    if (settled !== settledRef.current) {
+      settledRef.current = settled
+      setDofSettled(settled)
+    }
   })
 
   return (
